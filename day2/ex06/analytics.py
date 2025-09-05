@@ -1,0 +1,66 @@
+import os
+from random import randint
+
+
+class Research:
+    def __init__(self, file_path):
+        self.file_path = file_path
+
+    def file_reader(self, has_header=True):
+        if not os.path.exists(self.file_path):
+            raise FileNotFoundError(f"File '{self.file_path}' not found.")
+
+        with open(self.file_path, 'r') as file:
+            read_lines = [line.strip() for line in file if line.strip()]
+
+        if len(read_lines) < 2 and has_header:
+            raise ValueError(f'File must contain a header and at least one data row.')
+
+        if has_header:
+            read_lines = read_lines[1:]
+
+        valid_data = {'1,0', '0,1'}
+
+        data = []
+
+        for line in read_lines:
+            if line not in valid_data:
+                raise ValueError(f'Invalid data in line: {line}')
+            data.append(list(map(int, line.split(','))))
+        return data
+
+    class Calculations:
+        def __init__(self, data):
+            self.data = data
+
+        def counts(self):
+            heads = sum(row[0] for row in self.data)
+            tails = sum(row[1] for row in self.data)
+            return heads, tails
+
+        def fractions(self, heads, tails):
+            total = heads + tails
+            if total == 0:
+                return 0, 0
+            heads_percents = (heads / total) * 100
+            tails_percents = (tails / total) * 100
+
+            return heads_percents, tails_percents
+
+    class Analytics(Calculations):
+
+        def predict_random(self, num_of_predictions):
+            predictions = []
+            for _ in range(num_of_predictions):
+                first = randint(0, 1)
+                predictions.append([first, 1 - first])
+            return predictions
+
+        def predict_last(self):
+            if not self.data:
+                raise ValueError("No data available to predict the last item.")
+            return self.data[-1]
+
+        def save_file(self, data, file_name, extension='txt'):
+            with open(f'{file_name}.{extension}', 'w') as file:
+                file.write(data)
